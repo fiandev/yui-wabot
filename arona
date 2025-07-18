@@ -1,0 +1,71 @@
+#!/usr/bin/env bun
+
+import fs from "fs";
+import path from "path";
+
+const args = process.argv.slice(2);
+const [command, rawName] = args;
+
+if (!command || !rawName) {
+  console.error("Usage: bun arona make:<command|config> <Name>");
+  process.exit(1);
+}
+
+const [_, type] = command.split(":");
+const name = rawName.trim();
+const fileName = name.toLowerCase() + ".ts";
+const className = name; // untuk command
+const functionName = name.charAt(0).toLowerCase() + name.slice(1); // untuk config
+
+const templates: Record<string, () => string> = {
+  command: () => `
+import { type Command } from "../../types/Command";
+
+export const ${functionName}: Command = {
+  name: "${name.toLowerCase()}",
+  description: "Deskripsi ${name}",
+  async execute(sock, msg) {
+    await sock.sendMessage(msg.key.remoteJid!, { text: "${name} works!" });
+  },
+};
+`.trim(),
+
+  config: () => `
+export const ${functionName} = {
+  // Konfigurasi untuk ${name}
+};
+`.trim(),
+};
+
+const targetDir = type === "command" ? "commands" : type === "config" ? "config" : null;
+
+if (!targetDir || !(type in templates)) {
+  console.error("Tipe yang didukung: command, config");
+  process.exit(1);
+}
+
+const fullPath = path.join("./src", targetDir, fileName);
+
+try {
+  const stat = fs.statSync(path.dirname(fullPath));
+  if (stat.isDirectory()) {
+    if (fs.existsSync(fullPath)) {
+      console.error("File sudah ada:", fullPath);
+      process.exit(1);
+    }
+  } else {
+    console.error(`Tidak dapat menemukan direktori: ${path.dirname(fullPath)}`);
+    process.exit(1);
+  }
+} catch (error) {
+  if (error.code === "ENOENT") {
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+  } else {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+fs.writeFileSync(fullPath, templates[type]());
+console.log(`✅ Berhasil membuat ${type}: ${targetDir}/${fileName}`);
+process.exit(0);
