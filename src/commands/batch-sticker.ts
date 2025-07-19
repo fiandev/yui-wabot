@@ -5,6 +5,7 @@ export const batchSticker: Command = {
   description: "Toggle batch sticker mode",
   cmd: ["batch-sticker", "bs", "bst", "sticker-batch", "sbatch"],
   isMedia: true,
+  category: "tools",
   async execute(sock, msg) {
     let batch = global.db.get("batchModes") || [];
     const jid = msg.key.remoteJid!;

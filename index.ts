@@ -10,6 +10,9 @@ import type { Command } from "./types/Command";
 import UnexpectedError from "./src/exceptions/UnexpectedError";
 import { senderIdentity } from "./src/utils/senderIdentity";
 import log from "./src/utils/log";
+import { t } from "./src/utils/translate";
+import { sleep } from "bun";
+import Authenticate from "./src/lib/Authenticate";
 
 (async () => {
     const { state, saveCreds } = await useMultiFileAuthState('./sessions');
@@ -28,8 +31,6 @@ import log from "./src/utils/log";
         "./storage/db.production.zip" :
         "./storage/db.zip"
     );
-
-    console.log(global.db.data);
 
     for (const [key, value] of Object.entries(bot)) {
         global.db.set(key, value);
@@ -51,39 +52,61 @@ import log from "./src/utils/log";
             for (const msg of messages) {
                 if (msg.key.fromMe || !msg.message || msg.message.stickerMessage) return true;
 
-                log.info(`[UPsert] Message ID: ${msg.key.id} | from: ${msg.key.participant}`);
+                const sender = senderIdentity(msg);
+
+                log.info(`[${ sender.name || sender.jid }] Message ID: ${msg.key.id} | from: ${msg.key.participant}`);
 
                 const remoteJid = msg.key.remoteJid!;
                 const message = msg.message.conversation ||
                     msg.message.extendedTextMessage?.text || "";
 
-                // Cari command
+                // Identify command
                 const prefix = bot.prefix;
                 const prefixMatch = message.match(prefix);
 
+                // Execute middlewares
                 for (const middleware of middlewares) {
                     let isNext = await middleware.execute(sock, msg);
                     if (!isNext) break;
                 }
 
                 if (prefixMatch) {
-                    const cmd = prefixMatch.input?.replace(prefix, "").trim();
+                    const matchs = prefixMatch.input?.replace(prefix, "").trim().split(" ");
+                    if (!matchs) continue;
+
+                    const cmd = matchs[0];
+                    const args = matchs[1] || "";
+                    const splitedArgs = args.split(bot.argsSeparator)
+                        .map((v: string) => v.trim())
+                        .filter((v: string) => !bot.argsSeparator.test(v));
                     const command = commands.find((c: Command) => c.cmd.includes(cmd!));
+                    
+                    if (command?.isOnlyGroup && !sender.isGroup || command?.isOnlyOwner && !sender.isOwner) {
+                        await sock.sendMessage(remoteJid, { text: `${command?.isOnlyGroup ? await t("This command is only for group") : await t("This command is only for owner")}` }, { quoted: msg });
+                        continue;
+                    };
 
                     if (command) {
                         try {
-                            await command.execute(sock, msg);
-                        } catch (e: any) {
-                            console.log(e);
+                            if (command.isAuth) {
+                                let auth = new Authenticate();
+                                let jid = msg.key.remoteJid!;
 
-                            if (e instanceof UnexpectedError) {
-                                const sender = senderIdentity(msg);
-
-                                if (sender.isBot || sender.isOwner) {
-                                    await sock.sendMessage(remoteJid, { text: e.message });
+                                if (!auth.check(jid)) {
+                                    await sock.sendMessage(jid, { text: await t("You're not registered.") }, { quoted: msg });
+                                    continue;
                                 }
                             }
 
+                            await command.execute(sock, msg, splitedArgs);
+                            await sleep(bot.delayMessage);
+
+                        } catch (e: any) {
+                            if (e instanceof UnexpectedError) {
+                                if (sender.isBot || sender.isOwner) {
+                                    await sock.sendMessage(remoteJid, { text: e.message }, { quoted: msg });
+                                }
+                            }
                         }
                     }
                 } else {

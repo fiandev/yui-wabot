@@ -10,10 +10,10 @@ export const batchSticker: Middleware = {
         const isImage = !!msg.message?.imageMessage;
         const isVideo = !!msg.message?.videoMessage;
         const isSticker = !!msg.message?.stickerMessage;
-        const msgID = msg.key.id;
         const jid = msg.key.remoteJid!;
+        const batchModes = global.db.get("batchModes") || [];
         
-        if (msg.key.fromMe || isSticker || !isImage && !isVideo) return true;
+        if (msg.key.fromMe || isSticker || !isImage && !isVideo || batchModes.includes(jid)) return true;
         
         const mediaStream = await downloadMediaMessage(
             msg,

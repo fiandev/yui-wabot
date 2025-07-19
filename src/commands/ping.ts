@@ -8,16 +8,17 @@ import fs from "fs";
 export const ping: Command = {
   name: "ping",
   cmd: ["ping", "p", "?"],
-  description: "Deskripsi ping",
+  description: "test ping",
   async execute(sock, msg) {
     try {
       let server = os();
       let now  = time();
-  
+      let users = global.db.get("users");
       let text = `Pong!
   
   *Latency:* ${Number(Date.now() - Number(msg.messageTimestamp)).toFixed(2)} ms
   *Log Level:* ${sock.logger.level}
+  *Registered Users:* ${users?.length || 0}
   *Server:* ${server.ip}
   *Platform:* ${server.platform}
   *Runtime:* ${server.runtime}

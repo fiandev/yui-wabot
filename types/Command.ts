@@ -7,5 +7,9 @@ export interface Command {
   cmd: string[];
   category?: string;
   isMedia?: boolean;
-  execute: (sock: WASocket, msg: proto.IWebMessageInfo) => Promise<void>;
+  isOnlyOwner?: boolean;
+  isOnlyGroup?: boolean;
+  isPremium?: boolean;
+  isAuth?: boolean;
+  execute: (sock: WASocket, msg: proto.IWebMessageInfo, args?: string[]) => Promise<void>;
 }

@@ -1,13 +1,16 @@
 import type { Command } from "../../types/Command";
 import UnexpectedError from "../exceptions/UnexpectedError";
 import { commands } from "../registry";
+import { t } from "../utils/translate";
 
 const format = {
     heading: `﹂%s﹁`,
     separator: `
+
 ⤷ %s`,
     item: `
-➦ %s`,
+| %a
+➦ %b`,
     footer: `
 |――[%s]――>`
 }
@@ -30,12 +33,17 @@ export const menu: Command = {
                 }
                 grouped[command.category || "General"].push(command);
             });
-        
+
             for (const category in grouped) {
-                text += format.separator.replace("%s", category);
+                text += format.separator.replace("%s", await t(category));
 
                 for (const cmd of grouped[category]) {
-                    text += format.item.replace("%s", cmd.name);
+                    let cmdRule = cmd.cmd
+                        .map((cmd: string) => `.${cmd}`)
+                        .join(" | ");
+                    text += format.item
+                        .replace("%a", `${cmd.description} ${cmd.isPremium ? " (✧)" : ""}`)
+                        .replace("%b", cmdRule);
                 }
             }
             text += format.footer.replace("%s", new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }));
@@ -43,7 +51,7 @@ export const menu: Command = {
             await sock.sendMessage(msg.key.remoteJid!, { text });
         } catch (err) {
             console.log(err);
-            
+
             throw new UnexpectedError("Gagal menangani command menu");
         }
     }

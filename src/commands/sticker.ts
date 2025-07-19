@@ -5,9 +5,10 @@ import { Readable } from "stream";
 
 export const sticker: Command = {
   name: "sticker",
-  description: "Deskripsi sticker",
+  description: "create sticker",
   cmd: ["sticker", "s", "st"],
   isMedia: true,
+  category: "tools",
   async execute(sock, msg) {
     const isImage = !!msg.message?.imageMessage;
     const isVideo = !!msg.message?.videoMessage;

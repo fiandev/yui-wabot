@@ -4,7 +4,7 @@ import { parserArgumentConversation } from "../../../utils/parserArgumentConvers
 export const btcTx: Command = {
   name: "btc-tx",
   cmd: ["btc-tx", "btc-t", "btc-tx"],
-  description: "Deskripsi btc-tx",
+  description: "check bitcoin transaction",
   async execute(sock, msg) {
     const args = parserArgumentConversation(msg.message?.conversation || "").args;
     const txHash = args[0];
