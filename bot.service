@@ -1,0 +1,15 @@
+[Unit]
+Description=Bot WhatsApp - Bun Runtime
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/bot
+ExecStart=/usr/local/bin/bun run index.ts
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
