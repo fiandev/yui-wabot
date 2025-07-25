@@ -19,28 +19,26 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
           mkdir -p ~/.ssh
-          echo "$VPS_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $VPS_HOST > ~/.ssh/known_hosts
+          echo "$VPS_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
       - name: Archive project
         run: |
           tar --exclude='.git' --exclude='node_modules' --ignore-failed-read -czf deploy.tar.gz .
-      
+
       - name: Upload and Deploy
         env:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
-          scp -i ~/.ssh/id_rsa deploy.tar.gz $VPS_USER@$VPS_HOST:/root/bot/
+          scp -i ~/.ssh/id_ed25519 deploy.tar.gz $VPS_USER@$VPS_HOST:/root/bot/
 
-          ssh -i ~/.ssh/id_rsa $VPS_USER@$VPS_HOST "bash -lc '
-            export NVM_DIR=\"\$HOME/.nvm\"
-            [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"
+          ssh -i ~/.ssh/id_ed25519 $VPS_USER@$VPS_HOST "bash -lc '
             cd /root/bot && \
             tar -xzf deploy.tar.gz && \
             rm deploy.tar.gz && \
-            npm install --omit=dev && \
-            systemctl restart wabot
+            bun install --no-save && \
+            systemctl restart bot
           '"
