@@ -1,4 +1,5 @@
 import { type WASocket, type proto } from "@whiskeysockets/baileys";
+import type Authenticate from "../src/lib/Authenticate";
 
 export interface Command {
   name: string;
@@ -11,5 +12,5 @@ export interface Command {
   isOnlyGroup?: boolean;
   isPremium?: boolean;
   isAuth?: boolean;
-  execute: (sock: WASocket, msg: proto.IWebMessageInfo, args?: string[]) => Promise<void>;
+  execute: (sock: WASocket, msg: proto.IWebMessageInfo, args?: string[], auth?: Authenticate) => Promise<void>;
 }

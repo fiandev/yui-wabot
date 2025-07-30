@@ -19,32 +19,40 @@ export const register: Command = {
                 z.coerce.number().int().min(10, await t("Age is too low")).max(120, await t("Age is not realistic")),
                 z.string().min(1, await t("Profession cannot be empty")),
             ]);
-            
-            const jid = msg.key.remoteJid!;
+
+            const senderJid = msg.key.remoteJid!;
+            const isGroup = senderJid.endsWith("@g.us") || false;
+            const from = isGroup ? msg.key.participant : msg.key.remoteJid;
+            const phone = from?.split("@")[0] || "";
+
+            if (!phone) {
+                return;
+            }
+
             const auth = new Authenticate();
             const result = registerSchema.safeParse(args);
 
-            if (auth.check(jid)) {
-                await sock.sendMessage(jid, {
+            if (auth.check(phone)) {
+                await sock.sendMessage(senderJid, {
                     text: "You are already registered"
                 });
                 return;
             }
-            
+
             if (!result.success) {
                 const errorMessages = result.error.issues.map(e => `- ${e.message}`).join("\n");
-                await sock.sendMessage(jid, {
+                await sock.sendMessage(senderJid, {
                     text: `Invalid format:\n${errorMessages}\n\nExample: .reg John 25 Developer`
                 });
                 return;
             }
 
             const [name, age, profession] = result.data;
-            
-            auth.store({ jid, name, age });
+
+            auth.store({ phone, name, age });
             log.info(`[Register] ${name} | ${age} | ${profession}`);
 
-            await sock.sendMessage(jid, {
+            await sock.sendMessage(senderJid, {
                 text: `✅ Registration successful:\nName: ${name}\nAge: ${age}\nProfession: ${profession}`
             });
 

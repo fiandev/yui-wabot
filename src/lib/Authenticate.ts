@@ -1,45 +1,52 @@
+import { ensureDB } from "../helpers/db";
 import type FastDB from "./FastDB";
 
 type AuthenticateStoreParams = {
-    jid: string;
+    phone: string;
     name: string;
     age: number;
-}
+};
 
 export default class Authenticate {
     private db: FastDB;
-    private users: any[];
+    private users: Map<string, AuthenticateStoreParams>;
 
     constructor() {
-        this.db = global.db;
-        this.users = this.db.get("users")?.length ? this.db.get("users") : [];
+        this.db = ensureDB();
+
+        const rawUsers = this.db.get("users") || [];
+        this.users = new Map(
+            rawUsers.map((user: AuthenticateStoreParams) => [user.phone, user])
+        );
     }
 
-    
-    public store ({ jid, name, age }: AuthenticateStoreParams) {
-        this.users.push({ jid, name, age });
-        this.db.set("users", this.users);
+    public store({ phone, name, age }: AuthenticateStoreParams) {
+        this.users.set(phone, { phone, name, age });
+        this.syncToDB();
     }
 
-    public remove (jid: string) {
-        this.users.splice(this.users.indexOf(jid), 1);
-        this.db.set("users", this.users);
+    public remove(phone: string) {
+        if (this.users.delete(phone)) {
+            this.syncToDB();
+        }
     }
 
-    public check (jid: string): boolean {
-        const idx = this.users.findIndex(user => user.jid === jid);
+    public check(phone: string): boolean {
+        let parsePhone = phone.split("@")[0];
 
-        if (idx > -1) {
-            this.remove(jid);
+        if (this.users.has(parsePhone)) {
             return true;
         }
 
         return false;
     }
 
-    public getUser (jid: string) {
-        const idx = this.users.findIndex(user => user.jid === jid);
+    public getUser(phone: string) {
+        return this.users.get(phone) || null;
+    }
 
-        return this.users[idx] || null;
+    private syncToDB() {
+        this.db.set("users", Array.from(this.users.values()));
+        this.db.flush();
     }
 }
