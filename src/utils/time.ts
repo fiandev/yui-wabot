@@ -1,4 +1,4 @@
-export function time () {
+export function time() {
     const months = [
         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
@@ -12,6 +12,7 @@ export function time () {
         timestamp: today.getTime(),
         day: today.getDay(),
         month: months[today.getMonth()],
+        hour: today.getHours(),
         year: today.getFullYear(),
         localeDay: days[today.getDay()],
         localeMonth: months[today.getMonth()],

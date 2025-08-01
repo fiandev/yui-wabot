@@ -13,36 +13,18 @@ export const autoReply: Middleware = {
     isAuth: true,
     execute: async (sock, msg) => {
         try {
-            const isBotCalled = /(yui(\s?chan)?)/gi.test(msg.message?.conversation || "");
-            const fullMessage = msg.message?.conversation || "";
-            const isWithPrefix = fullMessage.search(bot?.prefix) < 0;
+            const fullMessage = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
+            const isBotCalled = /(yui(\s?chan)?)/gi.test(fullMessage);
             const isGroup = msg.key.remoteJid!.endsWith("@g.us");
             const user = senderIdentity(msg);
-
             if (msg.key.fromMe) return true;
-            if (isWithPrefix) return true;
 
-            // let isChatRegistered = global.db.get("auto-reply-chats").includes(msg.key.remoteJid!);
-            // console.log({ isChatRegistered })
-
-            // if (!isChatRegistered) return true;
             if (isGroup) {
                 let sender = msg.key.participant?.split("@")[0] || "--";
                 let jid = sock.user?.id || "";
 
-                /**
-                 * please don't touch it !!
-                 * this logic will skip this middleware :
-                 * 1. when chatbot not mentioned
-                 * 2. when message from chatbot not replied
-                 * 3. when chatbot name not typed on the conversetion
-                 */
+                // skip if not replied or not called
                 if (jid.search(sender) < 0 && !msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(jid) && !isBotCalled) return true;
-            }
-
-            // skip when not replied or not called
-            if (!msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(sock.user?.id!) || !isBotCalled) {
-                return true;
             }
 
             const remoteJid = msg.key.remoteJid!;
@@ -57,13 +39,42 @@ export const autoReply: Middleware = {
                 apiKey: env("DEEPSEEK_APIKEY")
             });
 
-            const completion = await openai.chat.completions.create({
-                messages: [
-                    { role: "system", content: prompt },
-                    { role: "user", content: `${user.name}: ${message}` }
-                ],
-                model: "deepseek-chat",
-            });
+            let completion;
+            try {
+                completion = await openai.chat.completions.create({
+                    messages: [
+                        { role: "system", content: prompt },
+                        { role: "user", content: `${user.name}: ${message}` }
+                    ],
+                    model: "deepseek-chat",
+                });
+            } catch (e: any) {
+                if (e.status === 402) {
+                    const response = await fetch("https://luminai.my.id/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            prompt,
+                            content: `[${user.name || "--"}] ${message}`,
+                            user: user.phone || msg.key.remoteJid!,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+
+                    const data = await response.json();
+
+                    completion = {
+                        choices: [{ message: { content: data.result } }],
+                    };
+                } else {
+                    throw e;
+                }
+            }
 
             const text = completion.choices[0].message.content;
 

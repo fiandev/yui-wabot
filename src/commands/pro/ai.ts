@@ -28,10 +28,40 @@ export const ai: Command = {
                 apiKey: env("DEEPSEEK_APIKEY")
             });
 
-            const completion = await openai.chat.completions.create({
-                messages: [{ role: "system", content: prompt }, { role: "user", content: message }],
-                model: "deepseek-chat",
-            });
+            let completion;
+
+            try {
+                completion = await openai.chat.completions.create({
+                    messages: [{ role: "system", content: prompt }, { role: "user", content: message }],
+                    model: "deepseek-chat",
+                });
+            } catch (e: any) {
+                if (e.status === 402) {
+                    const response = await fetch("https://luminai.my.id/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            prompt,
+                            content: `[${user?.name || "--"}] ${message}`,
+                            user: user?.phone || msg.key.remoteJid!,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+
+                    const data = await response.json();
+
+                    completion = {
+                        choices: [{ message: { content: data.result } }],
+                    };
+                } else {
+                    throw e;
+                }
+            }
 
             const text = completion.choices[0].message.content;
 
@@ -42,27 +72,6 @@ export const ai: Command = {
 
             await sock.sendMessage(remoteJid, { text }, { quoted: msg });
             log.info(`@${remoteJid} # ai generated!`);
-
-            const response = await fetch("https://luminai.my.id/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    prompt,
-                    content: `[${user?.name || "--"}] ${message}`,
-                    user: user?.phone || msg.key.remoteJid!,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(response.statusText);
-            }
-
-            const data = await response.json();
-
-            sock.sendMessage(msg.key.remoteJid!, { text: data.result }, { quoted: msg });
-            log.info(`@${msg.key.remoteJid!} # auto response generated!`);
 
         } catch (e: any) {
             console.error(e);
