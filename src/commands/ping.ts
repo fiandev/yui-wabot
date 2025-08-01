@@ -1,3 +1,4 @@
+import moment from "moment";
 import { type Command } from "../../types/Command";
 import UnexpectedError from "../exceptions/UnexpectedError";
 import { debugDB, ensureDB } from "../helpers/db";
@@ -17,9 +18,10 @@ export const ping: Command = {
       let now = time();
       let users = db.get("users");
       debugDB();
+      server.memory = "16 GB";
       let text = `Pong!
   
-  *Latency:* ${Number(Date.now() - Number(msg.messageTimestamp)).toFixed(2)} ms
+  *Latency:* ${moment().diff(global.timestamp, "ms")} ms
   *Log Level:* ${sock.logger.level}
   *Registered Users:* ${users?.length || 0}
   *Server:* ${server.ip}
@@ -30,10 +32,9 @@ export const ping: Command = {
   *Memory:* ${server.memory}
   *Uptime:* ${server.uptime}`;
 
-
       let imageBuffer = fs.readFileSync(getRandomCharImagePath());
 
-      if (now.localeDay == "Jumat") {
+      if (now.localeDay == "Jumat" && now.hour >= 10 && now.hour <= 12) {
         imageBuffer = fs.readFileSync("./assets/images/events/gak-jumatan.jpg");
       }
 

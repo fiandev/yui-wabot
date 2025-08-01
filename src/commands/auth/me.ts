@@ -1,9 +1,8 @@
-import { z } from "zod";
 import { type Command } from "../../../types/Command";
 import log from "../../utils/log";
-import { t } from "../../utils/translate";
-import Authenticate from "../../lib/Authenticate";
 import { senderIdentity } from "../../utils/senderIdentity";
+import { getRandomCharImagePath } from "../../utils/getRandomCharImagePath";
+import fs from "fs";
 
 export const me: Command = {
     name: "me",
@@ -24,8 +23,8 @@ export const me: Command = {
 *Is Premium:* ${identity.isPremium}
 *Is Author:* ${identity.isOwner}`
             if (!userProfile) {
-                let avatar = await fetch(`https://api.dicebear.com/7.x/initials/svg?seed=${name}`)
-                let buffer = Buffer.from(await avatar.arrayBuffer());
+                let buffer = fs.readFileSync(getRandomCharImagePath());
+
                 await sock.sendMessage(msg.key.remoteJid!, {
                     image: buffer,
                     caption: message
@@ -38,7 +37,7 @@ export const me: Command = {
             }
 
         } catch (err) {
-            log.error("[Register] Error: " + err);
+            console.error({ err });
             await sock.sendMessage(msg.key.remoteJid!, {
                 text: "An error occurred during registration. Please try again."
             });

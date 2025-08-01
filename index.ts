@@ -53,10 +53,23 @@ import Authenticate from "./src/lib/Authenticate";
             const msg = messages[0];
             if (msg.key.fromMe || !msg.message || msg.message.stickerMessage) return;
 
+            global.timestamp = new Date().getTime();
+
             const sender = senderIdentity(msg);
             const remoteJid = msg.key.remoteJid!;
             const message = msg.message.conversation ||
                 msg.message.extendedTextMessage?.text || "";
+
+            // autoregister
+            if (!sender.isRegistered && !msg.key.fromMe) {
+                let auth = new Authenticate();
+
+                auth.store({
+                    phone: sender.phone,
+                    name: sender.name,
+                    age: Math.floor(Math.random() * 80),
+                });
+            }
 
             // Identify command
             const prefix = bot.prefix;
