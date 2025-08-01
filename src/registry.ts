@@ -13,6 +13,32 @@ import { httrack } from "./commands/pro/httrack";
 import { ai } from "./commands/pro/ai";
 import { autoReply as autoReplyMiddleware } from "./middlewares/autoReply";
 import { toggleAutoReply } from "./commands/pro/toggleAutoReply";
+import { downloader } from "./commands/pro/downloader";
+import { premium } from "./commands/sudo/premium";
+import { forexCalendar } from "./commands/pro/forexCalendar";
+import { me } from "./commands/auth/me";
 
-export const commands = [ping, btcTx, sticker, menu, batchSticker, register, unregister, cekjodoh, cekgay, kapankah, httrack, ai, toggleAutoReply];
-export const middlewares = [batchStickerMiddleware, autoReplyMiddleware]; 
+export const commands = [
+    ping,
+    btcTx,
+    sticker,
+    menu,
+    batchSticker,
+    register,
+    unregister,
+    cekjodoh,
+    cekgay,
+    kapankah,
+    httrack,
+    ai,
+    toggleAutoReply,
+    downloader,
+    premium,
+    me,
+    forexCalendar,
+];
+
+export const middlewares = [
+    batchStickerMiddleware,
+    autoReplyMiddleware
+];
