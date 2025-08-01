@@ -44,6 +44,7 @@ import Authenticate from "./src/lib/Authenticate";
     const startBot = async () => {
         const sock = makeWASocket({
             auth: state,
+            syncFullHistory: false,
         });
 
         sock.ev.on("creds.update", saveCreds);
@@ -102,11 +103,21 @@ import Authenticate from "./src/lib/Authenticate";
                     try {
                         let auth = new Authenticate();
 
+                        if (command.isOnlyOwner && !sender.isOwner) {
+                            await sock.sendMessage(remoteJid, { text: await t("This command is only for owner") }, { quoted: msg });
+                            return;
+                        }
+
                         if (command.isAuth) {
                             if (!auth.check(sender.jid) && !msg.key.fromMe) {
                                 await sock.sendMessage(sender.jid, { text: await t("You're not registered.") }, { quoted: msg });
                                 return;
                             }
+                        }
+
+                        if (command.isPremium && !sender.isPremium) {
+                            await sock.sendMessage(sender.jid, { text: await t("You're not premium.") }, { quoted: msg });
+                            return;
                         }
 
                         await command.execute(sock, msg, splitedArgs, auth);
