@@ -12,7 +12,6 @@ export const batchSticker: Middleware = {
         const isSticker = !!msg.message?.stickerMessage;
         const jid = msg.key.remoteJid!;
         const batchModes = global.db.get("batchModes") || [];
-        return true;
 
         if (msg.key.fromMe || isSticker || !isImage && !isVideo || batchModes.includes(jid)) return true;
 
