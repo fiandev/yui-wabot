@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import axios from "axios";
+import SocialDownloader from "../lib/SocialDownloader";
 
 export function formatter(url: string, title: string, resourceURL: string, filename?: string) {
     return {
@@ -14,25 +15,28 @@ export function formatter(url: string, title: string, resourceURL: string, filen
 
 export async function getMetadata(url: string) {
     const rules = {
-        yt: {
+        youtube: {
             exp: /youtube/gi,
             endpoint: "https://api.ryzendesu.vip/api/downloader/ytmp4",
-            cb: (data: any) => {
-                return formatter(url, data.title, data.url, data.filename);
+            cb: async (data: any) => {
+                // return formatter(url, data.title, data.url, data.filename);
+                return await SocialDownloader.youtube(url);
             }
         },
-        ig: {
+        instagram: {
             exp: /instagram/gi,
             endpoint: "https://api.ryzendesu.vip/api/downloader/igdl",
-            cb: (data: any) => {
-                return formatter(url, "untitled", data.data[0].url);
+            cb: async (data: any) => {
+                // return formatter(url, "untitled", data.data[0].url);
+                return await SocialDownloader.instagram(url);
             }
         },
-        fb: {
+        facebook: {
             exp: /facebook/gi,
             endpoint: "https://api.ryzendesu.vip/api/downloader/fbdl",
-            cb: (data: any) => {
-                return formatter(data.url, data.title, data.video);
+            cb: async (data: any) => {
+                // return    formatter(data.url, data.title, data.video);
+                return await SocialDownloader.facebook(url);
             }
         },
     };
@@ -42,10 +46,18 @@ export async function getMetadata(url: string) {
             const rule = rules[key as keyof typeof rules];
 
             if (rule.exp.test(url)) {
-                let { data } = await axios.get(rule.endpoint, {
-                    params: { url }
-                });
-                return rule.cb(data);
+                let data = await rule.cb(url);
+
+                if (!data) {
+                    return false;
+                }
+
+                return data;
+
+                // let { data } = await axios.get(rule.endpoint, {
+                //     params: { url }
+                // });
+                // return rule.cb(data);
             }
         }
     } catch (error) {
@@ -93,17 +105,19 @@ export async function mediadown(postURLs: string[]) {
             continue;
         }
 
-        let resources = metadata.resources;
-        let title = metadata.title;
-        let c = 1;
+        console.log({ metadata });
 
-        for await (let resource of resources) {
-            let filename = title ? `${title}-${c}` : `${new Date().getTime()}.mp4`;
-            let pathfile = path.resolve("./media");
+        // let resources = metadata.resources;
+        // let title = metadata.title;
+        // let c = 1;
 
-            await download(resource, pathfile, filename);
-            c++;
-        }
+        // for await (let resource of resources) {
+        //     let filename = title ? `${title}-${c}` : `${new Date().getTime()}.mp4`;
+        //     let pathfile = path.resolve("./media");
+
+        //     await download(resource, pathfile, filename);
+        //     c++;
+        // }
     }
     console.log("done");
 }
