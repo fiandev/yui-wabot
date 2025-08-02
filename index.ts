@@ -96,17 +96,17 @@ import Authenticate from "./src/lib/Authenticate";
                 if (!isNext) break;
             }
 
+            const matchs = prefixMatch?.input?.replace(prefix, "").trim().split(" ");
+            if (!matchs) return;
+
+            const cmd = matchs[0];
+            const args = matchs[1] || "";
+            const splitedArgs = args.split(bot.argsSeparator)
+                .map((v: string) => v.trim())
+                .filter((v: string) => !bot.argsSeparator.test(v));
+            const command = commands.find((c: Command) => c.cmd.includes(cmd!));
+
             if (prefixMatch) {
-                const matchs = prefixMatch.input?.replace(prefix, "").trim().split(" ");
-                if (!matchs) return;
-
-                const cmd = matchs[0];
-                const args = matchs[1] || "";
-                const splitedArgs = args.split(bot.argsSeparator)
-                    .map((v: string) => v.trim())
-                    .filter((v: string) => !bot.argsSeparator.test(v));
-                const command = commands.find((c: Command) => c.cmd.includes(cmd!));
-
                 if (command?.isOnlyGroup && !sender.isGroup || command?.isOnlyOwner && !sender.isOwner) {
                     await sock.sendMessage(remoteJid, { text: `${command?.isOnlyGroup ? await t("This command is only for group") : await t("This command is only for owner")}` }, { quoted: msg });
                     return;
@@ -143,12 +143,6 @@ import Authenticate from "./src/lib/Authenticate";
                             }
                         }
                     }
-                }
-            } else {
-                const mediaCommand = commands.find((c: Command) => c.isMedia);
-                const hasImage = !!msg.message?.imageMessage;
-                if (hasImage && mediaCommand) {
-                    await mediaCommand.execute(sock, msg);
                 }
             }
 
