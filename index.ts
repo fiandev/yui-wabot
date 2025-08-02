@@ -122,7 +122,7 @@ import Authenticate from "./src/lib/Authenticate";
                         }
 
                         if (command.isAuth) {
-                            if (!auth.check(sender.jid) && !msg.key.fromMe) {
+                            if (!auth.check(sender.phone) && !msg.key.fromMe) {
                                 await sock.sendMessage(sender.jid, { text: await t("You're not registered.") }, { quoted: msg });
                                 return;
                             }
