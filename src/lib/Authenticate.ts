@@ -32,9 +32,7 @@ export default class Authenticate {
     }
 
     public check(phone: string): boolean {
-        let parsePhone = phone.split("@")[0];
-
-        if (this.users.has(parsePhone)) {
+        if (this.users.has(phone)) {
             return true;
         }
 
