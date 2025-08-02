@@ -125,7 +125,7 @@ class FastDB {
 
         // Kalau data sudah array
         if (Array.isArray(data)) {
-            this.data.set(key, [...new Set([...data, ...value])]);
+            this.data.set(key, [...Array.from(new Set([...data, ...value]))]);
             return this.saveToFile();
         }
 
