@@ -17,6 +17,7 @@ export const autoReply: Middleware = {
             const isBotCalled = /(yui(\s?chan)?)/gi.test(fullMessage);
             const isGroup = msg.key.remoteJid!.endsWith("@g.us");
             const user = senderIdentity(msg);
+
             if (msg.key.fromMe) return true;
 
             if (isGroup) {
@@ -26,6 +27,8 @@ export const autoReply: Middleware = {
                 // skip if not replied or not called
                 if (jid.search(sender) < 0 && !msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(jid) && !isBotCalled) return true;
             }
+
+            if (!isBotCalled && !isGroup && !msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(sock.user?.id!)) return true;
 
             const remoteJid = msg.key.remoteJid!;
 
