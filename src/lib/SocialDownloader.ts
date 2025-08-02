@@ -1,5 +1,6 @@
 import request from "request";
 import youtubeDl from "youtube-dl";
+import TiktokScraper from "@tobyg74/tiktok-api-dl";
 
 export default class SocialDownloader {
     public static instagram(postUrl: string): Promise<any> {
@@ -209,5 +210,15 @@ export default class SocialDownloader {
         return new Promise((resolve, reject) => {
 
         })
+    }
+
+    public static async tiktok(url: string): Promise<any> {
+        try {
+            const data = await TiktokScraper.Downloader(url);
+            return data;
+        } catch (err: any) {
+            throw new Error(err);
+        }
+
     }
 }

@@ -4,10 +4,10 @@ import { t } from "../../utils/translate";
 
 const PHONE_EXP = /^[0-9]{10,15}$/;
 
-export const premium: Command = {
-    name: "premium",
+export const removePremium: Command = {
+    name: "remove-premium",
     description: "Premium command",
-    cmd: ["premium", "prem"],
+    cmd: ["remove-premium", "remove-prem", "reprem"],
     isOnlyOwner: true,
     category: "sudo",
     execute: async (sock, msg, args) => {
@@ -28,7 +28,7 @@ export const premium: Command = {
 
         phones = [...phones, ...mentions];
 
-        db.set("premiums", [...db.get("premiums") || [], ...phones]);
+        db.set("premiums", db.get("premiums")?.filter((phone: string) => !phones.includes(phone)) || []);
         await sock.sendMessage(msg.key.remoteJid!, { text: await t("Some of you're now premium.") }, { quoted: msg });
     }
 }

@@ -117,27 +117,15 @@ class FastDB {
         }
 
         if (!data) {
-            this.data.set(key, Array.isArray(value) ? value : [value]);
+            this.data.set(key, value);
             return this.saveToFile();
         }
 
         const hash1 = crypto.createHash("sha256").update(JSON.stringify(data) || data).digest("hex");
+
         // Kalau data sudah array
         if (Array.isArray(data)) {
-            const newValues = Array.isArray(value) ? value : [value];
-
-            for (const val of newValues) {
-                // Cek apakah sudah ada berdasarkan `hash`
-                const exists = data.filter((item) => crypto.createHash("sha256").update(JSON.stringify(item) || item).digest("hex") === hash1);
-
-                if (exists.length === 0) {
-                    data.push(val);
-                }
-            }
-
-
-            this.data.set(key, data);
-
+            this.data.set(key, [...new Set([...data, ...value])]);
             return this.saveToFile();
         }
 
