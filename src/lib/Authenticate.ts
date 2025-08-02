@@ -46,7 +46,7 @@ export default class Authenticate {
     }
 
     private syncToDB() {
-        this.db.set("users", Array.from(this.users.values()));
+        this.db.set("users", Array.from(new Set(this.users.values())));
         this.db.flush();
     }
 }

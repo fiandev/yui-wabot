@@ -39,6 +39,14 @@ export async function getMetadata(url: string) {
                 return await SocialDownloader.facebook(url);
             }
         },
+        tiktok: {
+            exp: /tiktok/gi,
+            endpoint: "https://api.ryzendesu.vip/api/downloader/tiktok",
+            cb: async (data: any) => {
+                // return    formatter(data.url, data.title, data.video);
+                return await SocialDownloader.tiktok(url);
+            }
+        },
     };
 
     try {
@@ -47,7 +55,7 @@ export async function getMetadata(url: string) {
 
             if (rule.exp.test(url)) {
                 let data = await rule.cb(url);
-
+                console.log({ data });
                 if (!data) {
                     return false;
                 }

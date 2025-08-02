@@ -17,6 +17,8 @@ import { downloader } from "./commands/pro/downloader";
 import { premium } from "./commands/sudo/premium";
 import { forexCalendar } from "./commands/pro/forexCalendar";
 import { me } from "./commands/auth/me";
+import { qrGenerate } from "./commands/tools/qrGenerate";
+import { reqPremium } from "./commands/auth/reqPremium";
 
 export const commands = [
     ping,
@@ -35,6 +37,8 @@ export const commands = [
     downloader,
     premium,
     me,
+    qrGenerate,
+    reqPremium,
     forexCalendar,
 ];
 
