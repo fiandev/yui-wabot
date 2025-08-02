@@ -12,8 +12,15 @@ export const me: Command = {
     isMedia: false,
     category: "authentication",
     async execute(sock, msg, args) {
+        let userProfile = "";
+
         try {
-            let userProfile = await sock.profilePictureUrl(msg.key.remoteJid!);
+            userProfile = await sock.profilePictureUrl(msg.key.remoteJid!, "image") || "";
+        } catch (error) {
+            log.error("[me] Gagal mendapatkan profile picture");
+        }
+
+        try {
             let identity = senderIdentity(msg);
             let name = msg.message?.contactMessage?.displayName || msg.message?.chat?.displayName || identity.name || "Unknown";
             let message = `*\`User Information\`*
