@@ -15,7 +15,7 @@ jobs:
 
       - name: Archive project
         run: |
-          tar --exclude='.git' --exclude='node_modules' --ignore-failed-read -czf deploy.tar.gz .
+          tar --exclude='node_modules' --ignore-failed-read -czf deploy.tar.gz .
 
       - name: Upload file via SCP
         uses: appleboy/scp-action@v0.1.4
@@ -35,8 +35,9 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           port: 22
           script: |
+            systemctl stop bot
             cd /root/bot
             tar -xzf deploy.tar.gz
             rm deploy.tar.gz
             /root/.bun/bin/bun install
-            systemctl restart bot
+            systemctl start bot
