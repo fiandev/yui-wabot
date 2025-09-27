@@ -19,6 +19,7 @@ import { forexCalendar } from "./commands/pro/forexCalendar";
 import { me } from "./commands/auth/me";
 import { qrGenerate } from "./commands/tools/qrGenerate";
 import { reqPremium } from "./commands/auth/reqPremium";
+import { stockProfile } from "./commands/pro/stock-profile";
 
 export const commands = [
     ping,
@@ -40,6 +41,7 @@ export const commands = [
     qrGenerate,
     reqPremium,
     forexCalendar,
+    stockProfile
 ];
 
 export const middlewares = [
