@@ -4,7 +4,9 @@ import UnexpectedError from "../../exceptions/UnexpectedError";
 import { env } from "../../helpers/env";
 import log from "../../utils/log";
 import { t } from "../../utils/translate";
-import OpenAI from "openai";
+import {GoogleGenAI} from '@google/genai';
+
+const gemini = new GoogleGenAI({apiKey: env("GEMINI_API_KEY")});
 
 export const ai: Command = {
     cmd: ["ai", "chat", "chatbot"],
@@ -22,19 +24,22 @@ export const ai: Command = {
                 return;
             }
 
-            const prompt = `kamu adalah ${bot.botName}, seorang chatbot yang diprogram oleh fian, kamu berperan untuk membalas pesan ketika fian sedang sibuk dan tidak bisa membalas pesan, kamu memiliki sifat yang lucu seperti waifu di anime`;
-            const openai = new OpenAI({
-                baseURL: 'https://api.deepseek.com',
-                apiKey: env("DEEPSEEK_APIKEY")
-            });
-
+            const prompt = `kamu adalah ${bot.botName}, seorang chatbot yang diprogram oleh fian, kamu berperan untuk membalas pertanyaan apapun dari user, kamu memiliki sifat yang lucu seperti waifu di anime`;
             let completion;
 
             try {
-                completion = await openai.chat.completions.create({
-                    messages: [{ role: "system", content: prompt }, { role: "user", content: message }],
-                    model: "deepseek-chat",
+               const response = await gemini.models.generateContent({
+                    model: 'gemini-2.0-flash-001',
+                    contents: message,
+                    config: {
+                        systemInstruction: prompt,
+                        temperature: 0.8
+                    }
                 });
+
+                completion = {
+                    choices: [{ message: { content: response.text } }],
+                };
             } catch (e: any) {
                 if (e.status === 402) {
                     const response = await fetch("https://luminai.my.id/", {
