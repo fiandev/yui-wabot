@@ -2,7 +2,6 @@ import makeWASocket, { fetchLatestBaileysVersion, useMultiFileAuthState } from "
 import { config } from "dotenv";
 import { Boom } from "@hapi/boom";
 import { commands, middlewares } from "./src/registry";
-import { bot } from "./src/config/bot";
 import qrcode from "qrcode-terminal";
 import FastDB from "./src/lib/FastDB";
 import type { Command } from "./types/Command";
@@ -15,6 +14,7 @@ import { sleep } from "bun";
 import Authenticate from "./src/lib/Authenticate";
 import pino from "pino";
 import path from "path";
+import { bot } from "./src/config/bot";
 
 (async () => {
     const { state, saveCreds } = await useMultiFileAuthState('./sessions');

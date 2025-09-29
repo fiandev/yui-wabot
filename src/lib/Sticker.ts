@@ -14,7 +14,11 @@ class Sticker {
 
     try {
       await new Promise<void>((resolve, reject) => {
+        const ffmpegPath = "/usr/bin/ffmpeg";
+
+        // Atur path ini untuk library fluent-ffmpeg
         ffmpeg()
+          .setFfmpegPath(ffmpegPath)
           .input(stream)
           .inputOptions(["-hide_banner"])
           .toFormat("webp")
