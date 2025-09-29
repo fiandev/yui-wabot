@@ -39,5 +39,5 @@ jobs:
             cd /root/bot
             tar -xzf deploy.tar.gz
             rm deploy.tar.gz
-            /root/.bun/bin/bun install
+            bun install
             systemctl start bot
