@@ -1,4 +1,4 @@
-import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys";
+import makeWASocket, { fetchLatestBaileysVersion, useMultiFileAuthState } from "@whiskeysockets/baileys";
 import { config } from "dotenv";
 import { Boom } from "@hapi/boom";
 import { commands, middlewares } from "./src/registry";
@@ -13,6 +13,8 @@ import log from "./src/utils/log";
 import { t } from "./src/utils/translate";
 import { sleep } from "bun";
 import Authenticate from "./src/lib/Authenticate";
+import pino from "pino";
+import path from "path";
 
 (async () => {
     const { state, saveCreds } = await useMultiFileAuthState('./sessions');
@@ -42,10 +44,18 @@ import Authenticate from "./src/lib/Authenticate";
      * @returns void
      */
     const startBot = async () => {
+        const { version } = await fetchLatestBaileysVersion();
+        const logger = pino({ level: "info" });
+
         const sock = makeWASocket({
+            version,
+            logger,
             auth: state,
+            browser: [`${bot.botName}`, "Chrome", "1.0"],
+            markOnlineOnConnect: false,
             syncFullHistory: false,
         });
+
 
         sock.ev.on("creds.update", saveCreds);
 
@@ -58,7 +68,9 @@ import Authenticate from "./src/lib/Authenticate";
             const sender = senderIdentity(msg);
             const remoteJid = msg.key.remoteJid!;
             const message = msg.message.conversation ||
-                msg.message.extendedTextMessage?.text || "";
+                msg.message.extendedTextMessage?.text ||
+                msg.message.imageMessage?.caption ||
+                msg.message.videoMessage?.caption || "";
 
             // autoregister
             if (!sender.isRegistered && !msg.key.fromMe) {
