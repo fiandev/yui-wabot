@@ -7,7 +7,7 @@ export const forexCalendar: Command = {
     description: "Get forex calendar",
     cmd: ["forex-calendar", "fc", "forexcalendar"],
     isAuth: true,
-    isPremium: true,
+    isPremium: false,
     category: "tools",
     execute: async (sock, msg, args) => {
         try {

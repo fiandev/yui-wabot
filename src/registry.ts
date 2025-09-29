@@ -20,18 +20,20 @@ import { me } from "./commands/auth/me";
 import { qrGenerate } from "./commands/tools/qrGenerate";
 import { reqPremium } from "./commands/auth/reqPremium";
 import { stockProfile } from "./commands/pro/stock-profile";
+import { apakah } from "./commands/game/apakah";
 
 export const commands = [
     ping,
     btcTx,
     sticker,
     menu,
-    batchSticker,
+    // batchSticker,
     register,
     unregister,
     cekjodoh,
     cekgay,
     kapankah,
+    apakah,
     httrack,
     ai,
     toggleAutoReply,
@@ -45,6 +47,6 @@ export const commands = [
 ];
 
 export const middlewares = [
-    batchStickerMiddleware,
+    // batchStickerMiddleware,
     autoReplyMiddleware
 ];
