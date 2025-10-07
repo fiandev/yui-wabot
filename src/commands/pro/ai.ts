@@ -4,9 +4,9 @@ import UnexpectedError from "../../exceptions/UnexpectedError";
 import { env } from "../../helpers/env";
 import log from "../../utils/log";
 import { t } from "../../utils/translate";
-import {GoogleGenAI} from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 
-const gemini = new GoogleGenAI({apiKey: env("GEMINI_API_KEY")});
+const gemini = new GoogleGenAI({ apiKey: env("GEMINI_API_KEY") });
 
 export const ai: Command = {
     cmd: ["ai", "chat", "chatbot"],
@@ -15,12 +15,17 @@ export const ai: Command = {
     isAuth: true,
     execute: async (sock, msg, args, auth) => {
         try {
-            const message = args?.[0];
+            const message = msg?.message?.conversation ||
+                msg?.message?.extendedTextMessage?.text ||
+                msg?.message?.imageMessage?.caption ||
+                msg?.message?.videoMessage?.caption || "";
+            const question = message.replace(bot.prefix, '');
+
             const remoteJid = msg.key.remoteJid!;
             const user = auth?.getUser(remoteJid);
 
-            if (!message) {
-                await sock.sendMessage(remoteJid, { text: await t("Please provide a message") });
+            if (!question) {
+                await sock.sendMessage(remoteJid, { text: await t("Please ask anything you want") });
                 return;
             }
 
@@ -28,9 +33,9 @@ export const ai: Command = {
             let completion;
 
             try {
-               const response = await gemini.models.generateContent({
+                const response = await gemini.models.generateContent({
                     model: 'gemini-2.0-flash-001',
-                    contents: message,
+                    contents: question,
                     config: {
                         systemInstruction: prompt,
                         temperature: 0.8
