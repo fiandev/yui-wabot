@@ -1,5 +1,6 @@
 import type { Command } from "../../../types/Command";
 import { exec } from "child_process";
+import { bot } from "../../config/bot";
 
 export const execute: Command = {
     name: "execute",
@@ -9,7 +10,12 @@ export const execute: Command = {
     category: "sudo",
     execute: async (sock, msg, args) => {
         try {
-            const cli = args?.[0];
+            const message = msg?.message?.conversation ||
+                msg?.message?.extendedTextMessage?.text ||
+                msg?.message?.imageMessage?.caption ||
+                msg?.message?.videoMessage?.caption || "";
+            const cli = message.replace(bot.prefix, '');
+
 
             if (!cli) {
                 await sock.sendMessage(msg.key.remoteJid!, { text: "Please provide command line syntax" }, { quoted: msg });
@@ -18,7 +24,7 @@ export const execute: Command = {
 
             exec(cli, (err, stdout, stderr) => {
                 if (err) {
-                    sock.sendMessage(msg.key.remoteJid!, { text: err.message }, { quoted: msg });
+                    sock.sendMessage(msg.key.remoteJid!, { text: stderr }, { quoted: msg });
                     return;
                 }
 
