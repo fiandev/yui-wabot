@@ -21,6 +21,8 @@ import { qrGenerate } from "./commands/tools/qrGenerate";
 import { reqPremium } from "./commands/auth/reqPremium";
 import { stockProfile } from "./commands/pro/stock-profile";
 import { apakah } from "./commands/game/apakah";
+import { execute } from "./commands/sudo/execute";
+import { removePremium } from "./commands/sudo/removePremium";
 
 export const commands = [
     ping,
@@ -43,7 +45,10 @@ export const commands = [
     qrGenerate,
     reqPremium,
     forexCalendar,
-    stockProfile
+    stockProfile,
+    execute,
+    premium,
+    removePremium
 ];
 
 export const middlewares = [
