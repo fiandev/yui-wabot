@@ -1,4 +1,4 @@
-import { type Command } from "../../../types/Command";
+import type { Command } from "types/Command";
 import { bot } from "../../config/bot";
 import UnexpectedError from "../../exceptions/UnexpectedError";
 import { env } from "../../helpers/env";
@@ -11,6 +11,7 @@ const gemini = new GoogleGenAI({ apiKey: env("GEMINI_API_KEY") });
 export const ai: Command = {
     cmd: ["ai", "chat", "chatbot"],
     name: "ai",
+    category: "AI",
     description: "Chat anything with AI",
     isAuth: true,
     execute: async (sock, msg, args, auth) => {

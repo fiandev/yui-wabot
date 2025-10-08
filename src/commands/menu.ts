@@ -9,15 +9,14 @@ const format = {
 
 ⤷ %s`,
     item: `
-| %a
-➦ %b`,
+➦ %a`,
     footer: `
 |――[%s]――>`
 }
 
 export const menu: Command = {
     name: "menu",
-    cmd: ["menu", "help", "h"],
+    cmd: ["menu", "??", "help", "h"],
     description: "Deskripsi menu",
     async execute(sock, msg) {
         try {
@@ -39,11 +38,20 @@ export const menu: Command = {
 
                 for (const cmd of grouped[category]) {
                     let cmdRule = cmd.cmd
-                        .map((cmd: string) => `.${cmd}`)
+                        .map((command: string) => `.${command}  ${cmd.isPremium ? " ($)" : "(✦)"}`)
                         .join(" | ");
-                    text += format.item
-                        .replace("%a", `${cmd.description} ${cmd.isPremium ? " (✧)" : ""}`)
-                        .replace("%b", cmdRule);
+                    let description = cmd.description;
+                    const limitDesc = 50;
+
+                    description = description.replace("This API endpoint ", "");
+                    let isDescTooLong = description.length > limitDesc;
+
+                    if (isDescTooLong) {
+                        description = description.substring(0, limitDesc) + "...";
+                    }
+
+                    text += format.item.replace("%a", cmdRule);
+                    //     // .replace("%a", `${description} ${cmd.isPremium ? " ($)" : "(✦)"}`)
                 }
             }
             text += format.footer.replace("%s", new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }));
