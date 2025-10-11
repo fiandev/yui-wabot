@@ -1,5 +1,6 @@
 import type { Command } from "types/Command"; // Sesuaikan path jika perlu
 import axios from "axios";
+import { t } from "@/utils/translate";
 
 // PENTING: Ganti dengan base URL API Anda yang sebenarnya
 const BASE_URL = "https://api.siputzx.my.id";
@@ -17,6 +18,7 @@ export const andi: Command = {
   
   async execute(sock, msg) {
     const fullArgs = getCommandText(msg).slice(this.name.length + 2).trim();
+    const remoteJid = msg.key.remoteJid!;
     
     // Logika baru untuk mem-parsing banyak argumen
     const apiParams: Record<string, string> = {};
@@ -44,12 +46,19 @@ export const andi: Command = {
         }
     }
 
-    try {
-      await sock.sendMessage(msg.key.remoteJid!, { text: "⏳ Sedang memproses permintaan Anda..." }, { quoted: msg });
-      
+    try {      
       const searchParams = new URLSearchParams(apiParams);
       const url = `${BASE_URL}/api/ai/andi?${searchParams.toString()}`;
 
+       await sock.sendMessage(
+        remoteJid,
+        {
+          react: {
+            text: "⏳"
+          }
+        },
+        { quoted: msg },
+      )
       const { data } = await axios.get(url);
 
       let resultText = "";
@@ -69,14 +78,32 @@ export const andi: Command = {
       
       console.log({ resultText, data });
       if (!resultText || resultText.trim() === '{}' || resultText.trim() === '[]') {
-        throw new Error("API memberikan respons kosong atau tidak valid.");
+        throw new Error( await t("Request failed, please contact owner"));
       }
 
+      await sock.sendMessage(
+        remoteJid,
+        {
+          react: {
+            text: "✅"
+          }
+        },
+        { quoted: msg },
+      )
       await sock.sendMessage(msg.key.remoteJid!, { text: resultText }, { quoted: msg });
 
     } catch (error: any) {
       console.error("Error saat menjalankan command 'andi':", error);
-      const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan yang tidak terduga.";
+      const errorMessage = await t("Request failed, please contact owner");
+      await sock.sendMessage(
+        remoteJid,
+        {
+          react: {
+            text: "😭"
+          }
+        },
+        { quoted: msg },
+      )
       await sock.sendMessage(msg.key.remoteJid!, { text: `❌ Error: ${errorMessage}` }, { quoted: msg });
     }
   },

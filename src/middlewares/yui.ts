@@ -5,7 +5,7 @@ import log from "../utils/log";
 import Authenticate from "../lib/Authenticate";
 import OpenAI from "openai";
 import { env } from "../helpers/env";
-import { t } from "../utils/translate";
+import { t } from "@/utils/translate";
 import { senderIdentity } from "../utils/senderIdentity";
 import { fa } from "zod/v4/locales";
 import type { ChatCompletion } from "openai/resources/index.mjs";
