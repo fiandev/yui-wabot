@@ -27,6 +27,7 @@ import { removePremium } from "./commands/sudo/removePremium";
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Command } from 'types/Command'; // <-- Pastikan path ini benar
+import { yui } from "./middlewares/yui";
 
 
 // --- BAGIAN OTOMATISASI (VERSI BUN) ---
@@ -123,5 +124,6 @@ export const commands: Command[] = [
 ];
 
 export const middlewares = [
-    autoReplyMiddleware
+    // autoReplyMiddleware,
+    yui
 ];
